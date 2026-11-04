@@ -5,58 +5,113 @@
 {% block content %}
 
 <section class="hero">
-    <div class="hero-inner">
-        <div class="hero-badge">Personal Finance Tracker</div>
-        <h1 class="hero-title">
-            Know where your<br>
-            <em>money goes</em>
-        </h1>
-        <p class="hero-subtitle">
-            Log expenses, understand your spending patterns,
-            and take control of your financial life —
-            one transaction at a time.
-        </p>
-        <div class="hero-actions">
-            <a href="{{ url_for('register') }}" class="btn-primary">Start tracking free</a>
-            <a href="{{ url_for('login') }}" class="btn-ghost">Sign in</a>
+    <div class="hero-top">
+        <div class="hero-inner">
+            <div class="hero-badge">Personal Finance Tracker</div>
+            <h1 class="hero-title">
+                Know where your<br>
+                <em>money goes.</em>
+            </h1>
+            <p class="hero-subtitle">
+                Log expenses, understand your spending patterns,
+                and take control of your financial life —
+                one transaction at a time.
+            </p>
+            <ul class="hero-points">
+                <li>Log in seconds</li>
+                <li>Category breakdowns</li>
+                <li>Monthly summaries</li>
+            </ul>
+            <div class="hero-actions">
+                <a href="{{ url_for('register') }}" class="btn-primary">Start tracking free</a>
+                <a href="{{ url_for('login') }}" class="btn-ghost">Sign in</a>
+            </div>
+        </div>
+
+        <div class="hero-floats" aria-hidden="true">
+            <div class="float-pill">✦ Free to start</div>
+
+            <div class="float-goals">
+                <h2 class="float-title">Top Categories</h2>
+                <div class="float-row">
+                    <div class="float-row-head"><span>Bills</span><span>39%</span></div>
+                    <div class="float-track"><div class="float-bar" style="width: 39%"></div></div>
+                </div>
+                <div class="float-row">
+                    <div class="float-row-head"><span>Food</span><span>28%</span></div>
+                    <div class="float-track"><div class="float-bar" style="width: 28%"></div></div>
+                </div>
+                <div class="float-row">
+                    <div class="float-row-head"><span>Health</span><span>18%</span></div>
+                    <div class="float-track"><div class="float-bar" style="width: 18%"></div></div>
+                </div>
+            </div>
+
+            <div class="float-month">
+                <span class="float-month-label">This month</span>
+                <span class="float-month-total">₹11,550</span>
+                <span class="float-month-note">spent across 4 categories</span>
+            </div>
         </div>
     </div>
-    <div class="hero-visual">
-        <div class="mock-card">
-            <div class="mock-card-header">
-                <span class="mock-label">March 2026</span>
-                <span class="mock-total">₹12,450</span>
+
+    <div class="hero-dashboard">
+        <div class="dash-header">
+            <h2 class="dash-title"><span>✦</span> My Spendly Dashboard <span>✦</span></h2>
+            <p class="dash-sub">March 2026 · Spending overview</p>
+        </div>
+
+        <div class="dash-stats">
+            <div class="dash-stat dash-stat-green">
+                <span class="dash-stat-label">Total spent</span>
+                <span class="dash-stat-value">₹11,550</span>
+                <span class="dash-stat-note">this month</span>
             </div>
-            <div class="mock-bars">
-                <div class="mock-bar-row">
-                    <span class="mock-cat">Bills</span>
-                    <div class="mock-bar-track">
-                        <div class="mock-bar" style="width: 72%"></div>
-                    </div>
-                    <span class="mock-amt">₹4,500</span>
-                </div>
-                <div class="mock-bar-row">
-                    <span class="mock-cat">Food</span>
-                    <div class="mock-bar-track">
-                        <div class="mock-bar mock-bar-2" style="width: 52%"></div>
-                    </div>
-                    <span class="mock-amt">₹3,200</span>
-                </div>
-                <div class="mock-bar-row">
-                    <span class="mock-cat">Health</span>
-                    <div class="mock-bar-track">
-                        <div class="mock-bar mock-bar-3" style="width: 33%"></div>
-                    </div>
-                    <span class="mock-amt">₹2,050</span>
-                </div>
-                <div class="mock-bar-row">
-                    <span class="mock-cat">Transport</span>
-                    <div class="mock-bar-track">
-                        <div class="mock-bar mock-bar-4" style="width: 28%"></div>
-                    </div>
-                    <span class="mock-amt">₹1,800</span>
-                </div>
+            <div class="dash-stat dash-stat-rose">
+                <span class="dash-stat-label">Top category</span>
+                <span class="dash-stat-value">Bills</span>
+                <span class="dash-stat-note">₹4,500 · 39% of spending</span>
             </div>
+            <div class="dash-stat dash-stat-sand">
+                <span class="dash-stat-label">Categories</span>
+                <span class="dash-stat-value">4</span>
+                <span class="dash-stat-note">tracked &amp; categorised</span>
+            </div>
+        </div>
+
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Share</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Bills</td><td>₹4,500</td><td>39.0%</td></tr>
+                <tr><td>Food</td><td>₹3,200</td><td>27.7%</td></tr>
+                <tr><td>Health</td><td>₹2,050</td><td>17.7%</td></tr>
+                <tr><td>Transport</td><td>₹1,800</td><td>15.6%</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="hero-strip">
+        <div class="strip-item">
+            <span class="strip-icon">⚡</span>
+            <span><span class="strip-title">Instant Setup</span><span class="strip-note">Sign up in seconds</span></span>
+        </div>
+        <div class="strip-item">
+            <span class="strip-icon">∞</span>
+            <span><span class="strip-title">Free Forever</span><span class="strip-note">No subscription</span></span>
+        </div>
+        <div class="strip-item">
+            <span class="strip-icon">✦</span>
+            <span><span class="strip-title">No Skills Needed</span><span class="strip-note">Beginner-friendly</span></span>
+        </div>
+        <div class="strip-item">
+            <span class="strip-icon">♥</span>
+            <span><span class="strip-title">Built With Care</span><span class="strip-note">For real people</span></span>
         </div>
     </div>
 </section>
