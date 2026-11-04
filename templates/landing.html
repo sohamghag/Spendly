@@ -2,6 +2,68 @@
 
 {% block title %}Spendly — Track Every Rupee{% endblock %}
 
+{% block head %}
+<style>
+    /* "See how it works" button: make a <button> look like the .btn-ghost link */
+    button.btn-ghost {
+        font-family: inherit;
+        line-height: inherit;
+        cursor: pointer;
+    }
+
+    /* Video modal */
+    .video-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.75);
+    }
+
+    .video-modal[hidden] { display: none; }
+
+    .video-modal-content {
+        position: relative;
+        width: 100%;
+        max-width: 900px;
+    }
+
+    .video-modal-frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+
+    .video-modal-frame iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    .video-modal-close {
+        position: absolute;
+        top: -2.5rem;
+        right: 0;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 2rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .video-modal-close:hover { opacity: 0.8; }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <section class="hero">
@@ -24,7 +86,7 @@
             </ul>
             <div class="hero-actions">
                 <a href="{{ url_for('register') }}" class="btn-primary">Start tracking free</a>
-                <a href="{{ url_for('login') }}" class="btn-ghost">Sign in</a>
+                <button type="button" class="btn-ghost" id="video-open">See how it works</button>
             </div>
         </div>
 
@@ -147,5 +209,69 @@
     </div>
 </section>
 
+<div class="video-modal" id="video-modal" role="dialog" aria-modal="true" aria-label="How Spendly works" hidden>
+    <div class="video-modal-content">
+        <button type="button" class="video-modal-close" id="video-close" aria-label="Close video">&times;</button>
+        <div class="video-modal-frame" id="video-frame"></div>
+    </div>
+</div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        // Replace this with your YouTube video ID (the part after "v=" in the video URL).
+        var VIDEO_ID = 'M7lc1UVf-VE';
+
+        var openBtn = document.getElementById('video-open');
+        var closeBtn = document.getElementById('video-close');
+        var modal = document.getElementById('video-modal');
+        var frame = document.getElementById('video-frame');
+        var previousOverflow = '';
+
+        function openModal() {
+            // Create the iframe on open so the video autoplays each time.
+            var iframe = document.createElement('iframe');
+            iframe.src = 'https://www.youtube.com/embed/' + VIDEO_ID + '?autoplay=1&rel=0';
+            iframe.title = 'How Spendly works';
+            iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+            iframe.allowFullscreen = true;
+            frame.appendChild(iframe);
+
+            modal.hidden = false;
+            previousOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            closeBtn.focus();
+        }
+
+        function closeModal() {
+            // Remove the iframe so the video stops completely.
+            frame.innerHTML = '';
+
+            modal.hidden = true;
+            document.body.style.overflow = previousOverflow;
+            openBtn.focus();
+        }
+
+        openBtn.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+
+        // Click on the dark overlay (but not on the video) closes the modal.
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (modal.hidden) return;
+            if (e.key === 'Escape') {
+                closeModal();
+            } else if (e.key === 'Tab') {
+                // Keep focus on the close button while the modal is open.
+                e.preventDefault();
+                closeBtn.focus();
+            }
+        });
+    })();
+</script>
 {% endblock %}
