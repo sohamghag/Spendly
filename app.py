@@ -1,6 +1,12 @@
 from flask import Flask, render_template
 
+from database.db import get_db, init_db, seed_db
+
 app = Flask(__name__)
+
+with app.app_context():
+    init_db()
+    seed_db()
 
 
 # ------------------------------------------------------------------ #
@@ -49,6 +55,7 @@ def profile():
 @app.route("/expenses/add")
 def add_expense():
     return "Add expense — coming in Step 7"
+
 
 
 @app.route("/expenses/<int:id>/edit")
