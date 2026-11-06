@@ -31,8 +31,8 @@ From $ARGUMENTS extract:
    - Maximum 40 characters
    - Example: registration, login-logout
 
-4. `branch_name` — format: `feature/<feature_slug>`
-   - Example: `feature/registration`
+4. `branch_name` — format: `features/<feature_slug>`
+   - Example: `features/registration`
 
 If you cannot infer these from $ARGUMENTS, ask the user
 to clarify before proceeding.
@@ -41,7 +41,7 @@ to clarify before proceeding.
 
 Run `git branch` to list existing branches.
 If `branch_name` is already taken, append a number:
-`feature/registration-01`, `feature/registration-02` etc.
+`features/registration-01`, `features/registration-02` etc.
 
 ## Step 4 — Switch to main and pull latest
 
