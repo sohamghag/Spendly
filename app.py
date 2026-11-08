@@ -5,6 +5,12 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database.db import get_db, init_db, seed_db
+from database.queries import (
+    get_user_by_id,
+    get_summary_stats,
+    get_recent_transactions,
+    get_category_breakdown,
+)
 
 app = Flask(__name__)
 # The fallback key is for local development only; set SECRET_KEY in production.
@@ -114,43 +120,21 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    if not session.get("user_id"):
+    user_id = session.get("user_id")
+    if not user_id:
         return redirect(url_for("login"))
 
-    # Hardcoded for Step 4; mirrors the demo seed. Real queries arrive in Step 5.
-    user = {
-        "name": "Demo User",
-        "email": "demo@spendly.com",
-        "initials": "DU",
-        "member_since": "November 2026",
-    }
-    stats = {
-        "total_spent": 5831.25,
-        "transaction_count": 8,
-        "top_category": "Shopping",
-    }
-    transactions = [
-        {"date": "26 Nov 2026", "description": "Dinner out", "category": "Food", "amount": 320.75},
-        {"date": "18 Nov 2026", "description": "New shoes", "category": "Shopping", "amount": 2200.00},
-        {"date": "14 Nov 2026", "description": "Movie night", "category": "Entertainment", "amount": 600.00},
-        {"date": "10 Nov 2026", "description": "Pharmacy", "category": "Health", "amount": 450.50},
-        {"date": "07 Nov 2026", "description": "Electricity bill", "category": "Bills", "amount": 1800.00},
-    ]
-    categories = [
-        {"name": "Shopping", "total": 2200.00, "percent": 38},
-        {"name": "Bills", "total": 1800.00, "percent": 31},
-        {"name": "Entertainment", "total": 600.00, "percent": 10},
-        {"name": "Food", "total": 570.75, "percent": 10},
-        {"name": "Health", "total": 450.50, "percent": 8},
-        {"name": "Other", "total": 150.00, "percent": 3},
-        {"name": "Transport", "total": 60.00, "percent": 1},
-    ]
+    user = get_user_by_id(user_id)
+    if user is None:  # stale session: the user row no longer exists
+        session.clear()
+        return redirect(url_for("login"))
+
     return render_template(
         "profile.html",
         user=user,
-        stats=stats,
-        transactions=transactions,
-        categories=categories,
+        stats=get_summary_stats(user_id),
+        transactions=get_recent_transactions(user_id),
+        categories=get_category_breakdown(user_id),
     )
 
 
