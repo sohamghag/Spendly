@@ -51,6 +51,8 @@
                                 <td><span class="badge badge-{{ t.category|lower }}">{{ t.category }}</span></td>
                                 <td class="txn-amount">₹{{ "{:,.2f}".format(t.amount) }}</td>
                             </tr>
+                            {% else %}
+                            <tr><td colspan="4">No transactions yet.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -64,10 +66,12 @@
                     <li>
                         <div class="cat-head">
                             <span class="cat-name">{{ c.name }}</span>
-                            <span class="cat-total">₹{{ "{:,.2f}".format(c.total) }}</span>
+                            <span class="cat-total">₹{{ "{:,.2f}".format(c.amount) }}</span>
                         </div>
-                        <progress class="cat-bar" max="100" value="{{ c.percent }}">{{ c.percent }}%</progress>
+                        <progress class="cat-bar" max="100" value="{{ c.pct }}">{{ c.pct }}%</progress>
                     </li>
+                    {% else %}
+                    <li>No spending yet.</li>
                     {% endfor %}
                 </ul>
             </div>
