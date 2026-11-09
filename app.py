@@ -38,6 +38,7 @@ def _is_valid_email(email):
     return bool(local) and bool(domain)
 
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
