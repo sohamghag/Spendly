@@ -1,7 +1,17 @@
+import calendar
 import os
 import sqlite3
+from datetime import date, datetime
 
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import (
+    Flask,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database.db import get_db, init_db, seed_db
@@ -13,8 +23,13 @@ from database.queries import (
 )
 
 app = Flask(__name__)
-# The fallback key is for local development only; set SECRET_KEY in production.
-app.secret_key = os.environ.get("SECRET_KEY", "dev-only-insecure-key-change-me")
+# The fallback key is for local development only; production must set SECRET_KEY.
+_secret_key = os.environ.get("SECRET_KEY")
+if not _secret_key:
+    if os.environ.get("FLASK_ENV") == "production":
+        raise RuntimeError("SECRET_KEY must be set when FLASK_ENV=production")
+    _secret_key = "dev-only-insecure-key-change-me"
+app.secret_key = _secret_key
 
 with app.app_context():
     init_db()
@@ -119,6 +134,67 @@ def logout():
     return redirect(url_for("landing"))
 
 
+def _parse_iso_date(value):
+    """Return a date for a 'YYYY-MM-DD' string, or None if missing/malformed."""
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return None
+
+
+def _months_ago(d, n):
+    """Same day n months before d, clamped to the end of the target month."""
+    month_index = d.year * 12 + (d.month - 1) - n
+    year, month = divmod(month_index, 12)
+    month += 1
+    day = min(d.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
+
+
+def _resolve_date_range(args):
+    """Return (date_from, date_to) as ISO strings, or (None, None) for no filter.
+
+    A missing/malformed bound means no filter; a reversed range also means
+    no filter and queues a flash message for the profile page.
+    """
+    start_date = _parse_iso_date(args.get("date_from"))
+    end_date = _parse_iso_date(args.get("date_to"))
+    if not (start_date and end_date):
+        return None, None
+    if start_date > end_date:
+        flash("Start date must be before end date.", "filter")
+        return None, None
+    return start_date.isoformat(), end_date.isoformat()
+
+
+def _build_presets(today, date_from, date_to):
+    """Quick-select presets with their link URL and whether each is active.
+
+    All Time has no bounds and links to a clean /profile URL.
+    """
+    end = today.isoformat()
+    ranges = [
+        ("This Month", today.replace(day=1).isoformat(), end),
+        ("Last 3 Months", _months_ago(today, 3).isoformat(), end),
+        ("Last 6 Months", _months_ago(today, 6).isoformat(), end),
+        ("All Time", None, None),
+    ]
+    presets = []
+    for label, preset_from, preset_to in ranges:
+        if preset_from:
+            url = url_for("profile", date_from=preset_from, date_to=preset_to)
+        else:
+            url = url_for("profile")
+        presets.append(
+            {
+                "label": label,
+                "url": url,
+                "active": (preset_from, preset_to) == (date_from, date_to),
+            }
+        )
+    return presets
+
+
 @app.route("/profile")
 def profile():
     user_id = session.get("user_id")
@@ -130,12 +206,24 @@ def profile():
         session.clear()
         return redirect(url_for("login"))
 
+    date_from, date_to = _resolve_date_range(request.args)
+    presets = _build_presets(date.today(), date_from, date_to)
+    custom_active = date_from is not None and not any(p["active"] for p in presets)
+
     return render_template(
         "profile.html",
         user=user,
-        stats=get_summary_stats(user_id),
-        transactions=get_recent_transactions(user_id),
-        categories=get_category_breakdown(user_id),
+        stats=get_summary_stats(user_id, date_from=date_from, date_to=date_to),
+        transactions=get_recent_transactions(
+            user_id, date_from=date_from, date_to=date_to
+        ),
+        categories=get_category_breakdown(
+            user_id, date_from=date_from, date_to=date_to
+        ),
+        presets=presets,
+        date_from=date_from,
+        date_to=date_to,
+        custom_active=custom_active,
     )
 
 

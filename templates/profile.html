@@ -15,6 +15,32 @@
             </div>
         </div>
 
+        <div class="filter-bar">
+            {% with msgs = get_flashed_messages(category_filter=["filter"]) %}
+            {% for m in msgs %}
+            <p class="filter-error">{{ m }}</p>
+            {% endfor %}
+            {% endwith %}
+
+            <nav class="filter-presets" aria-label="Date range presets">
+                {% for p in presets %}
+                <a href="{{ p.url }}" class="filter-preset{% if p.active %} is-active{% endif %}">{{ p.label }}</a>
+                {% endfor %}
+            </nav>
+
+            <form method="get" action="{{ url_for('profile') }}" class="filter-custom{% if custom_active %} is-active{% endif %}">
+                <label class="filter-field">
+                    <span>From</span>
+                    <input type="date" name="date_from" value="{{ date_from or '' }}">
+                </label>
+                <label class="filter-field">
+                    <span>To</span>
+                    <input type="date" name="date_to" value="{{ date_to or '' }}">
+                </label>
+                <button type="submit" class="filter-apply">Apply</button>
+            </form>
+        </div>
+
         <div class="profile-stats">
             <div class="stat-tile">
                 <span class="stat-label"><i data-lucide="wallet"></i>Total spent</span>
