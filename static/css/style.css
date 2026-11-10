@@ -670,6 +670,35 @@ a { color: inherit; text-decoration: none; }
 
 .btn-submit:hover { background: var(--accent); }
 
+select.form-input { cursor: pointer; }
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.form-actions .btn-submit {
+    width: auto;
+    flex: 1;
+    margin-top: 0;
+}
+
+.form-cancel {
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-cancel:hover { color: var(--ink); }
+
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
 .auth-switch {
     text-align: center;
     font-size: 0.875rem;

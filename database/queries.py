@@ -28,6 +28,21 @@ def get_user_by_id(user_id):
     }
 
 
+def create_expense(user_id, amount, category, expense_date, description):
+    """Insert one expense for user_id and return its new id."""
+    conn = get_db()
+    try:
+        cur = conn.execute(
+            "INSERT INTO expenses (user_id, amount, category, date, description) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (user_id, amount, category, expense_date, description),
+        )
+        conn.commit()
+        return cur.lastrowid
+    finally:
+        conn.close()
+
+
 def _date_clause(date_from, date_to):
     """Return (sql_fragment, params) for an inclusive date range, or empty."""
     if date_from and date_to:
