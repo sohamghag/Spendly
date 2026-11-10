@@ -1,4 +1,5 @@
 import calendar
+import math
 import os
 import sqlite3
 from datetime import date, datetime
@@ -14,8 +15,9 @@ from flask import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from database.db import get_db, init_db, seed_db
+from database.db import CATEGORIES, get_db, init_db, seed_db
 from database.queries import (
+    create_expense,
     get_user_by_id,
     get_summary_stats,
     get_recent_transactions,
@@ -30,6 +32,13 @@ if not _secret_key:
         raise RuntimeError("SECRET_KEY must be set when FLASK_ENV=production")
     _secret_key = "dev-only-insecure-key-change-me"
 app.secret_key = _secret_key
+# Stop browsers sending the session cookie on cross-site POSTs (CSRF hardening)
+# and keep it out of reach of page JavaScript.
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+MAX_AMOUNT = 10_000_000
+DESCRIPTION_MAX_LENGTH = 200
 
 with app.app_context():
     init_db()
@@ -250,13 +259,85 @@ def privacy():
     return render_template("privacy.html")
 
 
+def _validate_expense_form(values, today):
+    """Validate stripped add-expense form values.
+
+    Returns (cleaned, None) on success or (None, error_message) on failure.
+    `cleaned` holds the keyword arguments for create_expense().
+    """
+    try:
+        amount = float(values["amount"])
+    except ValueError:
+        return None, "Please enter a valid amount."
+    if not math.isfinite(amount) or amount <= 0 or amount > MAX_AMOUNT:
+        return None, f"Amount must be greater than zero and at most {MAX_AMOUNT:,}."
+
+    if values["category"] not in CATEGORIES:
+        return None, "Please choose a category."
+
+    expense_date = _parse_iso_date(values["date"])
+    if expense_date is None:
+        return None, "Please enter a valid date."
+    if expense_date > today:
+        return None, "Date cannot be in the future."
+
+    if len(values["description"]) > DESCRIPTION_MAX_LENGTH:
+        return None, (
+            f"Description must be {DESCRIPTION_MAX_LENGTH} characters or fewer."
+        )
+
+    return {
+        "amount": round(amount, 2),
+        "category": values["category"],
+        "expense_date": expense_date.isoformat(),
+        "description": values["description"] or None,
+    }, None
+
+
+@app.route("/expenses/add", methods=["GET", "POST"])
+def add_expense():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    if get_user_by_id(user_id) is None:  # stale session
+        session.clear()
+        return redirect(url_for("login"))
+
+    today = date.today()
+    values = {
+        "amount": "",
+        "category": "",
+        "date": today.isoformat(),
+        "description": "",
+    }
+    error = None
+
+    if request.method == "POST":
+        values = {
+            "amount": request.form.get("amount", "").strip(),
+            "category": request.form.get("category", ""),
+            "date": request.form.get("date", "").strip(),
+            "description": request.form.get("description", "").strip(),
+        }
+        cleaned, error = _validate_expense_form(values, today)
+        if error is None:
+            create_expense(user_id, **cleaned)
+            return redirect(url_for("profile"))
+
+    return render_template(
+        "add_expense.html",
+        categories=CATEGORIES,
+        today=today.isoformat(),
+        description_max=DESCRIPTION_MAX_LENGTH,
+        error=error,
+        values=values,
+    ), (400 if error else 200)
+
+
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-@app.route("/expenses/add")
-def add_expense():
-    return "Add expense — coming in Step 7"
 
 
 

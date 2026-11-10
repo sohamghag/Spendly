@@ -15,6 +15,10 @@
             </div>
         </div>
 
+        <div class="profile-actions">
+            <a href="{{ url_for('add_expense') }}" class="btn-primary">+ Add expense</a>
+        </div>
+
         <div class="filter-bar">
             {% with msgs = get_flashed_messages(category_filter=["filter"]) %}
             {% for m in msgs %}
