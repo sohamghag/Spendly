@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Spendly{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="cs-stage">
+    <span class="cs-blob cs-blob-tl" aria-hidden="true"></span>
+    <span class="cs-blob cs-blob-br" aria-hidden="true"></span>
+
+    <div class="cs-card">
+        <span class="cs-corner cs-corner-tr" aria-hidden="true"></span>
+        <span class="cs-corner cs-corner-bl" aria-hidden="true"></span>
+
+        <div class="cs-icon-wrap">
+            <span class="cs-icon-glow" aria-hidden="true"></span>
+            <div class="cs-icon">
+                <img src="{{ url_for('static', filename='img/analytics-clock.svg') }}" alt="" width="48" height="48">
+            </div>
+        </div>
+
+        <div class="cs-badge">Coming Soon</div>
+
+        <h2 class="cs-title">Advanced Analytics</h2>
+        <p class="cs-text">We're working on powerful insights and visualizations to help you understand your spending patterns better.</p>
+
+        <div class="cs-dots" aria-hidden="true">
+            <span class="cs-dot cs-dot-1"></span>
+            <span class="cs-dot cs-dot-2"></span>
+            <span class="cs-dot cs-dot-3"></span>
+        </div>
+        <p class="cs-note">We're crafting something special</p>
+
+        <span class="cs-bar" aria-hidden="true"></span>
+    </div>
+</section>
+{% endblock %}
