@@ -43,6 +43,34 @@ def create_expense(user_id, amount, category, expense_date, description):
         conn.close()
 
 
+def get_expense_by_id(expense_id, user_id):
+    """Return the expense row if it exists and belongs to user_id, else None."""
+    conn = get_db()
+    try:
+        return conn.execute(
+            "SELECT id, amount, category, date, description FROM expenses "
+            "WHERE id = ? AND user_id = ?",
+            (expense_id, user_id),
+        ).fetchone()
+    finally:
+        conn.close()
+
+
+def update_expense(expense_id, user_id, amount, category, expense_date, description):
+    """Update one of user_id's expenses; return the number of rows changed."""
+    conn = get_db()
+    try:
+        cur = conn.execute(
+            "UPDATE expenses SET amount = ?, category = ?, date = ?, description = ? "
+            "WHERE id = ? AND user_id = ?",
+            (amount, category, expense_date, description, expense_id, user_id),
+        )
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()
+
+
 def _date_clause(date_from, date_to):
     """Return (sql_fragment, params) for an inclusive date range, or empty."""
     if date_from and date_to:
@@ -56,12 +84,13 @@ def get_recent_transactions(user_id, limit=10, date_from=None, date_to=None):
     conn = get_db()
     try:
         rows = conn.execute(
-            "SELECT date, description, category, amount FROM expenses "
+            "SELECT id, date, description, category, amount FROM expenses "
             f"WHERE user_id = ?{clause} ORDER BY date DESC, id DESC LIMIT ?",
             (user_id, *range_params, limit),
         ).fetchall()
         return [
             {
+                "id": r["id"],
                 "date": datetime.strptime(r["date"], "%Y-%m-%d").strftime("%d %b %Y"),
                 "description": r["description"] or "",
                 "category": r["category"],
