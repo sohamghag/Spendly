@@ -6,6 +6,7 @@ from datetime import date, datetime
 
 from flask import (
     Flask,
+    abort,
     flash,
     redirect,
     render_template,
@@ -18,6 +19,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database.db import CATEGORIES, get_db, init_db, seed_db
 from database.queries import (
     create_expense,
+    get_expense_by_id,
+    update_expense,
     get_user_by_id,
     get_summary_stats,
     get_recent_transactions,
@@ -335,15 +338,56 @@ def add_expense():
     ), (400 if error else 200)
 
 
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
+def edit_expense(id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    if get_user_by_id(user_id) is None:  # stale session
+        session.clear()
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id, user_id)
+    if expense is None:  # missing or owned by another user
+        abort(404)
+
+    today = date.today()
+    values = {
+        "amount": f"{expense['amount']:.2f}",
+        "category": expense["category"],
+        "date": expense["date"],
+        "description": expense["description"] or "",
+    }
+    error = None
+
+    if request.method == "POST":
+        values = {
+            "amount": request.form.get("amount", "").strip(),
+            "category": request.form.get("category", ""),
+            "date": request.form.get("date", "").strip(),
+            "description": request.form.get("description", "").strip(),
+        }
+        cleaned, error = _validate_expense_form(values, today)
+        if error is None:
+            update_expense(id, user_id, **cleaned)
+            return redirect(url_for("profile"))
+
+    # Validation errors re-render with 200, as the Step 8 spec requires.
+    return render_template(
+        "edit_expense.html",
+        expense=expense,
+        categories=CATEGORIES,
+        today=today.isoformat(),
+        description_max=DESCRIPTION_MAX_LENGTH,
+        error=error,
+        values=values,
+    )
+
+
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-
-
-@app.route("/expenses/<int:id>/edit")
-def edit_expense(id):
-    return "Edit expense — coming in Step 8"
 
 
 @app.route("/expenses/<int:id>/delete")
