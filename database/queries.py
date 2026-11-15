@@ -71,6 +71,20 @@ def update_expense(expense_id, user_id, amount, category, expense_date, descript
         conn.close()
 
 
+def delete_expense(expense_id, user_id):
+    """Delete one of user_id's expenses; return the number of rows deleted."""
+    conn = get_db()
+    try:
+        cur = conn.execute(
+            "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+            (expense_id, user_id),
+        )
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()
+
+
 def _date_clause(date_from, date_to):
     """Return (sql_fragment, params) for an inclusive date range, or empty."""
     if date_from and date_to:
